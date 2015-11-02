@@ -14,7 +14,6 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: yaf_request.h 326040 2012-06-08 10:35:44Z laruence $ */
 
 #ifndef YAF_REQUEST_H
 #define YAF_REQUEST_H
@@ -44,7 +43,7 @@
 
 #define YAF_REQUEST_IS_METHOD(x) \
 PHP_METHOD(yaf_request, is##x) {\
-	zval * method  = zend_read_property(Z_OBJCE_P(getThis()), getThis(), ZEND_STRL(YAF_REQUEST_PROPERTY_NAME_METHOD), 1 TSRMLS_CC);\
+	zval * method  = zend_read_property(Z_OBJCE_P(getThis()), getThis(), ZEND_STRL(YAF_REQUEST_PROPERTY_NAME_METHOD), 0 TSRMLS_CC);\
 	if (strncasecmp(#x, Z_STRVAL_P(method), Z_STRLEN_P(method)) == 0) { \
 		RETURN_TRUE; \
 	} \
@@ -57,19 +56,20 @@ PHP_METHOD(ce, get##x) { \
 	int  len; \
     zval *ret; \
 	zval *def = NULL; \
-	if (ZEND_NUM_ARGS() == 0) {\
-		ret = yaf_request_query(type, NULL, 0 TSRMLS_CC);\
-	}else if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &name, &len, &def) == FAILURE) {\
-		WRONG_PARAM_COUNT;\
+	if (ZEND_NUM_ARGS() == 0) { \
+		ret = yaf_request_query(type, NULL, 0 TSRMLS_CC); \
+	}else if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &name, &len, &def) == FAILURE) { \
+		return; \
 	} else { \
 		ret = yaf_request_query(type, name, len TSRMLS_CC); \
-		if (ZVAL_IS_NULL(ret)) {\
-			if (def != NULL) {\
+		if (ZVAL_IS_NULL(ret)) { \
+			if (def != NULL) { \
+				zval_ptr_dtor(&ret); \
 				RETURN_ZVAL(def, 1, 0); \
-			}\
-		}\
-	}\
-	RETURN_ZVAL(ret, 1, 0);\
+			} \
+		} \
+	} \
+	RETURN_ZVAL(ret, 1, 1); \
 }
 
 extern zend_class_entry * yaf_request_ce;

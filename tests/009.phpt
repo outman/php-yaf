@@ -2,6 +2,8 @@
 Check for Yaf_View_Simple
 --SKIPIF--
 <?php if (!extension_loaded("yaf")) print "skip"; ?>
+--INI--
+yaf.use_namespace=0
 --FILE--
 <?php
 $view = new Yaf_View_Simple(dirname(__FILE__));
@@ -13,6 +15,7 @@ var_dump(strlen($view->render(dirname(__FILE__) . "/001.phpt")));
 var_dump($view->name);
 var_dump($view->noexists);
 print_r($view);
+?>
 --EXPECTF--
 Yaf_View_Simple Object
 (

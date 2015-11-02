@@ -1,8 +1,14 @@
 --TEST--
 Check for Yaf_View_Simple::eval
 --SKIPIF--
-<?php if (!extension_loaded("yaf")) print "skip"; ?>
+<?php
+if (!extension_loaded("yaf")) print "skip";
+if (substr(PHP_OS, 0, 3) == 'WIN') {
+    die('skip windows has a different absolute path');
+}
+?>
 --INI--
+yaf.use_namespace=0
 --FILE--
 <?php 
 $view = new Yaf_View_Simple("/tmp");

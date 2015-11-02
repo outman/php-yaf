@@ -3,6 +3,7 @@ Check for Yaf_Application
 --SKIPIF--
 <?php if (!extension_loaded("yaf")) print "skip"; ?>
 --INI--
+yaf.use_namespace=0
 --FILE--
 <?php 
 $config = array(
@@ -29,6 +30,6 @@ $app->run();
 ?>
 --EXPECTF--
 int(516)
-string(%d) "Could not find controller script %s"
+string(%d) "Failed opening controller script %s: %s"
 int(0)
 string(0) ""

@@ -9,6 +9,7 @@ if (version_compare(PHP_VERSION, '5.4.0') >= 0) {
 ?>
 --INI--
 short_open_tag = 0
+yaf.use_namespace=0
 --FILE--
 <?php 
 $view = new Yaf_View_Simple(dirname(__FILE__));
@@ -27,7 +28,7 @@ var_dump(ini_get("short_open_tag"));
 $view->display($tpl, array('name' => 'template'));
 echo "\n";
 print_r($view);
-
+unlink($tpl);
 ?>
 --EXPECTF--
 template

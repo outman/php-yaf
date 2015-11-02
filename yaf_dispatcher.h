@@ -14,7 +14,6 @@
   +----------------------------------------------------------------------+
  */
 
-/* $Id: yaf_dispatcher.h 315725 2011-08-29 16:59:33Z laruence $ */
 
 #ifndef PHP_YAF_DISPATCHER_H
 #define PHP_YAF_DISPATCHER_H

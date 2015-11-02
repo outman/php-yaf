@@ -14,7 +14,6 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: yaf.c 327415 2012-09-01 13:58:02Z laruence $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -91,8 +90,8 @@ PHP_GINIT_FUNCTION(yaf)
 	yaf_globals->autoload_started   = 0;
 	yaf_globals->configs			= NULL;
 	yaf_globals->directory			= NULL;
-	yaf_globals->local_library  = NULL;
-	yaf_globals->ext			    = YAF_DEFAULT_EXT;
+	yaf_globals->local_library		= NULL;
+	yaf_globals->ext				= YAF_DEFAULT_EXT;
 	yaf_globals->view_ext			= YAF_DEFAULT_VIEW_EXT;
 	yaf_globals->default_module		= YAF_ROUTER_DEFAULT_MODULE;
 	yaf_globals->default_controller = YAF_ROUTER_DEFAULT_CONTROLLER;
@@ -100,6 +99,7 @@ PHP_GINIT_FUNCTION(yaf)
 	yaf_globals->bootstrap			= YAF_DEFAULT_BOOTSTRAP;
 	yaf_globals->modules			= NULL;
 	yaf_globals->default_route      = NULL;
+	yaf_globals->suppressing_warning = 0;
 }
 /* }}} */
 
@@ -116,7 +116,7 @@ PHP_MINIT_FUNCTION(yaf)
 #ifdef YAF_HAVE_NAMESPACE
 	if(YAF_G(use_namespace)) {
 
-		REGISTER_STRINGL_CONSTANT("YAF\\VERSION", YAF_VERSION, 	sizeof(YAF_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
+		REGISTER_STRINGL_CONSTANT("YAF\\VERSION", PHP_YAF_VERSION, 	sizeof(PHP_YAF_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
 		REGISTER_STRINGL_CONSTANT("YAF\\ENVIRON", YAF_G(environ), strlen(YAF_G(environ)), 	CONST_PERSISTENT | CONST_CS);
 
 		REGISTER_LONG_CONSTANT("YAF\\ERR\\STARTUP_FAILED", 		YAF_ERR_STARTUP_FAILED, CONST_PERSISTENT | CONST_CS);
@@ -132,7 +132,7 @@ PHP_MINIT_FUNCTION(yaf)
 
 	} else {
 #endif
-		REGISTER_STRINGL_CONSTANT("YAF_VERSION", YAF_VERSION, 	sizeof(YAF_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
+		REGISTER_STRINGL_CONSTANT("YAF_VERSION", PHP_YAF_VERSION, 	sizeof(PHP_YAF_VERSION) - 1, 	CONST_PERSISTENT | CONST_CS);
 		REGISTER_STRINGL_CONSTANT("YAF_ENVIRON", YAF_G(environ),strlen(YAF_G(environ)), 	CONST_PERSISTENT | CONST_CS);
 
 		REGISTER_LONG_CONSTANT("YAF_ERR_STARTUP_FAILED", 		YAF_ERR_STARTUP_FAILED, CONST_PERSISTENT | CONST_CS);
@@ -189,20 +189,21 @@ PHP_MSHUTDOWN_FUNCTION(yaf)
 */
 PHP_RINIT_FUNCTION(yaf)
 {
-	YAF_G(running)  			= 0;
-	YAF_G(in_exception) 		= 0;
-	YAF_G(throw_exception)   	= 1;
-	YAF_G(catch_exception)   	= 0;
-	YAF_G(directory)			= NULL;
-	YAF_G(bootstrap)			= NULL;
-	YAF_G(local_library)     	= NULL;
-	YAF_G(local_namespaces)    	= NULL;
-	YAF_G(modules)				= NULL;
-	YAF_G(base_uri)				= NULL;
+	YAF_G(running)			= 0;
+	YAF_G(in_exception)		= 0;
+	YAF_G(throw_exception)	= 1;
+	YAF_G(catch_exception)	= 0;
+	YAF_G(directory)		= NULL;
+	YAF_G(bootstrap)		= NULL;
+	YAF_G(local_library)	= NULL;
+	YAF_G(local_namespaces)	= NULL;
+	YAF_G(modules)			= NULL;
+	YAF_G(base_uri)			= NULL;
+	YAF_G(view_directory)	= NULL;
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4))
-	YAF_G(buffer)				= NULL;
-	YAF_G(owrite_handler)		= NULL;
-	YAF_G(buf_nesting)			= 0;
+	YAF_G(buffer)			= NULL;
+	YAF_G(owrite_handler)	= NULL;
+	YAF_G(buf_nesting)		= 0;
 #endif
 
 	return SUCCESS;
@@ -231,6 +232,9 @@ PHP_RSHUTDOWN_FUNCTION(yaf)
 	if (YAF_G(base_uri)) {
 		efree(YAF_G(base_uri));
 	}
+	if (YAF_G(view_directory)) {
+		efree(YAF_G(view_directory));
+	}
 	YAF_G(default_route) = NULL;
 
 	return SUCCESS;
@@ -249,7 +253,7 @@ PHP_MINFO_FUNCTION(yaf)
 	}
 
 
-	php_info_print_table_row(2, "Version", YAF_VERSION);
+	php_info_print_table_row(2, "Version", PHP_YAF_VERSION);
 	php_info_print_table_row(2, "Supports", YAF_SUPPORT_URL);
 	php_info_print_table_end();
 
@@ -292,7 +296,7 @@ zend_module_entry yaf_module_entry = {
 	PHP_RINIT(yaf),
 	PHP_RSHUTDOWN(yaf),
 	PHP_MINFO(yaf),
-	YAF_VERSION,
+	PHP_YAF_VERSION,
 	PHP_MODULE_GLOBALS(yaf),
 	PHP_GINIT(yaf),
 	NULL,

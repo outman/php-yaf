@@ -14,27 +14,22 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: yaf_request.c 327283 2012-08-26 07:58:18Z laruence $*/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include "php.h"
-#include "php_ini.h"
-#include "main/SAPI.h"
-#include "Zend/zend_interfaces.h"
-#include "Zend/zend_exceptions.h"
-#include "Zend/zend_alloc.h"
-#include "ext/standard/php_string.h"
+#include "standard/php_string.h" /* for php_basename */
+#include "Zend/zend_exceptions.h" /* for zend_exception_get_default */
 
 #include "php_yaf.h"
 #include "yaf_request.h"
 #include "yaf_namespace.h"
 #include "yaf_exception.h"
 
-#include "requests/simple.c"
-#include "requests/http.c"
+#include "requests/yaf_request_simple.h"
+#include "requests/yaf_request_http.h"
 
 zend_class_entry *yaf_request_ce;
 
@@ -59,12 +54,12 @@ ZEND_BEGIN_ARG_INFO_EX(yaf_request_set_action_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, action)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(yaf_request_set_baseuir_arginfo, 0, 0, 1)
-	ZEND_ARG_INFO(0, uir)
+ZEND_BEGIN_ARG_INFO_EX(yaf_request_set_baseuri_arginfo, 0, 0, 1)
+	ZEND_ARG_INFO(0, uri)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(yaf_request_set_request_uri_arginfo, 0, 0, 1)
-	ZEND_ARG_INFO(0, uir)
+	ZEND_ARG_INFO(0, uri)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(yaf_request_set_param_arginfo, 0, 0, 1)
@@ -101,6 +96,7 @@ yaf_request_t * yaf_request_instance(yaf_request_t *this_ptr, char *other TSRMLS
 int yaf_request_set_base_uri(yaf_request_t *request, char *base_uri, char *request_uri TSRMLS_DC) {
 	char *basename = NULL;
 	uint basename_len = 0;
+	zval *container = NULL;
 
 	if (!base_uri) {
 		zval 	*script_filename;
@@ -126,14 +122,16 @@ int yaf_request_set_base_uri(yaf_request_t *request, char *base_uri, char *reque
 							NULL, 0, &script, &script_len TSRMLS_CC);
 
 					if (strncmp(file_name, script, file_name_len) == 0) {
-						basename 	 = Z_STRVAL_P(script_name);
-						basename_len = Z_STRLEN_P(script_name);
+						basename 	= Z_STRVAL_P(script_name);
+						basename_len 	= Z_STRLEN_P(script_name);
+						container 	= script_name;
 						efree(file_name);
 						efree(script);
 						break;
 					}
 					efree(script);
 				}
+				zval_ptr_dtor(&script_name);
 
 				phpself_name = yaf_request_query(YAF_GLOBAL_VARS_SERVER, ZEND_STRL("PHP_SELF") TSRMLS_CC);
 				if (phpself_name && IS_STRING == Z_TYPE_P(phpself_name)) {
@@ -144,12 +142,14 @@ int yaf_request_set_base_uri(yaf_request_t *request, char *base_uri, char *reque
 					if (strncmp(file_name, phpself, file_name_len) == 0) {
 						basename	 = Z_STRVAL_P(phpself_name);
 						basename_len = Z_STRLEN_P(phpself_name);
+						container = phpself_name;
 						efree(file_name);
 						efree(phpself);
 						break;
 					}
 					efree(phpself);
 				}
+				zval_ptr_dtor(&phpself_name);
 
 				orig_name = yaf_request_query(YAF_GLOBAL_VARS_SERVER, ZEND_STRL("ORIG_SCRIPT_NAME") TSRMLS_CC);
 				if (orig_name && IS_STRING == Z_TYPE_P(orig_name)) {
@@ -159,9 +159,9 @@ int yaf_request_set_base_uri(yaf_request_t *request, char *base_uri, char *reque
 					if (strncmp(file_name, orig, file_name_len) == 0) {
 						basename 	 = Z_STRVAL_P(orig_name);
 						basename_len = Z_STRLEN_P(orig_name);
+						container = orig_name;
 						efree(file_name);
 						efree(orig);
-						zval_ptr_dtor(&orig_name);
 						break;
 					}
 					efree(orig);
@@ -170,32 +170,45 @@ int yaf_request_set_base_uri(yaf_request_t *request, char *base_uri, char *reque
 				efree(file_name);
 			}
 		} while (0);
+		zval_ptr_dtor(&script_filename);
 
 		if (basename && strstr(request_uri, basename) == request_uri) {
 			if (*(basename + basename_len - 1) == '/') {
 				--basename_len;
 			}
 			zend_update_property_stringl(yaf_request_ce, request, ZEND_STRL(YAF_REQUEST_PROPERTY_NAME_BASE), basename, basename_len TSRMLS_CC);
+			if (container) {
+				zval_ptr_dtor(&container);
+			}
+
 			return 1;
 		} else if (basename) {
-			char 	*dir;
 			size_t  dir_len;
+			char 	*dir = estrndup(basename, basename_len); /* php_dirname might alter the string */
 
-			dir_len = php_dirname(basename, basename_len);
+			dir_len = php_dirname(dir, basename_len);
 			if (*(basename + dir_len - 1) == '/') {
 				--dir_len;
 			}
 
 			if (dir_len) {
-				dir = estrndup(basename, dir_len);
 				if (strstr(request_uri, dir) == request_uri) {
 					zend_update_property_string(yaf_request_ce, request, ZEND_STRL(YAF_REQUEST_PROPERTY_NAME_BASE), dir TSRMLS_CC);
 					efree(dir);
+
+					if (container) {
+						zval_ptr_dtor(&container);
+					}
 					return 1;
 				}
-				efree(dir);
 			}
+			efree(dir);
 		}
+
+		if (container) {
+			zval_ptr_dtor(&container);
+		}
+
 		zend_update_property_string(yaf_request_ce, request, ZEND_STRL(YAF_REQUEST_PROPERTY_NAME_BASE), "" TSRMLS_CC);
 		return 1;
 	} else {
@@ -208,7 +221,7 @@ int yaf_request_set_base_uri(yaf_request_t *request, char *base_uri, char *reque
 /** {{{ zval * yaf_request_query(uint type, char * name, uint len TSRMLS_DC)
 */
 zval * yaf_request_query(uint type, char * name, uint len TSRMLS_DC) {
-	zval 		**carrier, **ret;
+	zval 		**carrier = NULL, **ret;
 
 #if (PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION < 4)
 	zend_bool 	jit_initialization = (PG(auto_globals_jit) && !PG(register_globals) && !PG(register_long_arrays));
@@ -326,7 +339,7 @@ zval * yaf_request_get_language(yaf_request_t *instance TSRMLS_DC) {
 		zval * accept_langs = yaf_request_query(YAF_GLOBAL_VARS_SERVER, ZEND_STRL("HTTP_ACCEPT_LANGUAGE") TSRMLS_CC);
 
 		if (IS_STRING != Z_TYPE_P(accept_langs) || !Z_STRLEN_P(accept_langs)) {
-			return lang;
+			return accept_langs;
 		} else {
 			char  	*ptrptr, *seg;
 			uint	prefer_len = 0;
@@ -590,13 +603,11 @@ PHP_METHOD(yaf_request, setParam) {
 
 	if (1 == argc) {
 		zval *value ;
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &value) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &value) == FAILURE) {
 			return;
 		}
-		if (value && Z_TYPE_P(value) == IS_ARRAY) {
-			if (yaf_request_set_params_multi(self, value TSRMLS_CC)) {
-				RETURN_ZVAL(self, 1, 0);
-			}
+		if (yaf_request_set_params_multi(self, value TSRMLS_CC)) {
+			RETURN_ZVAL(self, 1, 0);
 		}
 	} else if (2 == argc) {
 		zval *value;
@@ -769,28 +780,28 @@ PHP_METHOD(yaf_request, setRouted) {
 /** {{{ yaf_request_methods
 */
 zend_function_entry yaf_request_methods[] = {
-	PHP_ME(yaf_request, isGet, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, isPost,	yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, isPut, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, isHead, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, isOptions, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, isCli, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, isXmlHttpRequest, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getServer, yaf_request_getserver_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getEnv, yaf_request_getenv_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, setParam, yaf_request_set_param_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getParam, yaf_request_get_param_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getParams, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getException, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getModuleName, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getControllerName, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getActionName, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, setModuleName, yaf_request_set_module_name_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, setControllerName, yaf_request_set_controller_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, setActionName, yaf_request_set_action_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getMethod, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, getLanguage, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
-	PHP_ME(yaf_request, setBaseUri, yaf_request_set_baseuir_arginfo, ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, isGet, 		yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, isPost,		yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, isPut, 		yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, isHead, 		yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, isOptions, 		yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, isCli, 		yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, isXmlHttpRequest, 	yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getServer, 		yaf_request_getserver_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getEnv, 		yaf_request_getenv_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, setParam, 		yaf_request_set_param_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getParam, 		yaf_request_get_param_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getParams, 		yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getException, 	yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getModuleName, 	yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getControllerName, 	yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getActionName, 	yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, setModuleName, 	yaf_request_set_module_name_arginfo, 	ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, setControllerName, 	yaf_request_set_controller_arginfo, 	ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, setActionName, 	yaf_request_set_action_arginfo, 	ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getMethod, 		yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, getLanguage, 	yaf_request_void_arginfo, 		ZEND_ACC_PUBLIC)
+	PHP_ME(yaf_request, setBaseUri, yaf_request_set_baseuri_arginfo, ZEND_ACC_PUBLIC)
 	PHP_ME(yaf_request, getBaseUri,	yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
 	PHP_ME(yaf_request, getRequestUri, yaf_request_void_arginfo, ZEND_ACC_PUBLIC)
 	PHP_ME(yaf_request, setRequestUri, yaf_request_set_request_uri_arginfo, ZEND_ACC_PUBLIC)

@@ -14,15 +14,12 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: yaf_registry.c 321289 2011-12-21 02:53:29Z laruence $  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include "php.h"
-#include "php_ini.h"
-#include "main/SAPI.h"
 
 #include "php_yaf.h"
 #include "yaf_namespace.h"
@@ -122,7 +119,7 @@ PHP_METHOD(yaf_registry, get) {
 }
 /* }}} */
 
-/** {{{ proto public staitc Yaf_Registry::set($name, $value)
+/** {{{ proto public static Yaf_Registry::set($name, $value)
 */
 PHP_METHOD(yaf_registry, set) {
 	zval *value;
@@ -148,7 +145,7 @@ PHP_METHOD(yaf_registry, set) {
 }
 /* }}} */
 
-/** {{{ proto public staitc Yaf_Registry::del($name)
+/** {{{ proto public static Yaf_Registry::del($name)
 */
 PHP_METHOD(yaf_registry, del) {
 	char *name;

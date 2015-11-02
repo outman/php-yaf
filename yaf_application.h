@@ -14,7 +14,6 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: yaf_application.h 321289 2011-12-21 02:53:29Z laruence $ */
 
 #ifndef PHP_YAF_APPLICATION_H
 #define PHP_YAF_APPLICATION_H

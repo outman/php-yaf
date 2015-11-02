@@ -1,5 +1,5 @@
 # Yaf - Yet Another Framework  
-[![Build Status](https://secure.travis-ci.org/laruence/php-yaf.png)](http://travis-ci.org/laruence/php-yaf)
+[![Build Status](https://secure.travis-ci.org/laruence/yaf.png)](https://travis-ci.org/laruence/yaf)
 
 PHP framework written in c and built as a PHP extension.
 
@@ -16,7 +16,7 @@ $pecl install yaf
 ### Compile Yaf in Linux
 ```
 $/path/to/phpize
-$./configure --with-php-config=/path/to/php-config/
+$./configure --with-php-config=/path/to/php-config
 $make && make install
 ```
 ### For windows 
@@ -27,6 +27,9 @@ Yaf manual could be found at: http://www.php.net/manual/en/book.yaf.php
 
 ## IRC
 efnet.org #php.yaf
+
+## For IDE
+you could find a documented prototype script here: https://github.com/elad-yosifon/php-yaf-doc
 
 ## Tutorial
 
@@ -108,7 +111,7 @@ application.ini is the application config file
 ```ini
 [product]
 ;CONSTANTS is supported
-application.directory = APP_PATH "/application/" 
+application.directory = APPLICATION_PATH "/application/" 
 ```
 alternatively, you can use a PHP array instead: 
 ```php

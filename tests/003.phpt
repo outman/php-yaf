@@ -5,6 +5,7 @@ Check for Yaf_Loader
 --INI--
 yaf.use_spl_autoload=0
 yaf.lowcase_path=0
+yaf.use_namespace=0
 --FILE--
 <?php 
 ini_set("ap.lowcase_path", FALSE);
@@ -28,11 +29,11 @@ try {
 
 ?>
 --EXPECTF--
-string(21) "Baidu:Sina:Wb:Inf:123"
+string(21) "Baidu%cSina%cWb%cInf%c123"
 bool(true)
 
-Warning: Yaf_Loader::autoload(): Could not find script %s/Baidu/Name.php in %s
+Warning: Yaf_Loader::autoload(): Failed opening script %sBaidu%cName.php: No such file or directory in %s
 bool(true)
 
-Warning: Yaf_Loader::autoload(): Could not find script %s/global/Global/Name.php in %s
+Warning: Yaf_Loader::autoload(): Failed opening script %sglobal%cGlobal%cName.php: No such file or directory in %s
 bool(true)

@@ -2,6 +2,8 @@
 Check for Yaf_Router
 --SKIPIF--
 <?php if (!extension_loaded("yaf")) print "skip"; ?>
+--INI--
+yaf.use_namespace=0
 --FILE--
 <?php
 
@@ -16,6 +18,7 @@ var_dump($router->getCurrentRoute());
 print_r($router->getRoutes());
 print_r($router->getRoute("simple"));
 var_dump($router->getRoute("noexists"));
+?>
 --EXPECTF--
 Yaf_Router Object
 (

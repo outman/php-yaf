@@ -4,6 +4,7 @@ Check for Yaf_View_Simple::get and clear
 <?php if (!extension_loaded("yaf")) print "skip"; ?>
 --INI--
 yaf.library="/php/global/dir"
+yaf.use_namespace=0
 --FILE--
 <?php
 $view = new Yaf_View_Simple(dirname(__FILE__));
@@ -15,6 +16,7 @@ $view->clear("b");
 print_r($view->get());
 $view->clear();
 print_r($view->get());
+?>
 --EXPECTF--
 bArray
 (

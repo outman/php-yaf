@@ -4,6 +4,8 @@ Memleaks in Yaf_Dispatcher::getInstance()
 <?php if (!extension_loaded("yaf")) print "skip"; ?>
 --INI--
 yaf.use_namespace=0
+yaf.environ="product"
+yaf.use_namespace=0
 --FILE--
 <?php
 define("APPLICATION_PATH", dirname(__FILE__));
@@ -14,5 +16,6 @@ unset($a);
 Yaf_Dispatcher::getInstance();
 $b = Yaf_Dispatcher::getInstance();
 var_dump(get_class($b));
+?>
 --EXPECTF--
 string(14) "Yaf_Dispatcher"

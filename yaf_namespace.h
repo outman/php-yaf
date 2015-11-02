@@ -14,7 +14,6 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: yaf_namespace.h 321289 2011-12-21 02:53:29Z laruence $ */
 
 #ifndef YAF_NAMESPACE_H
 #define YAF_NAMESPACE_H

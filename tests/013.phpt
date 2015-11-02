@@ -2,6 +2,8 @@
 Check for Yaf_Router and Config Routes
 --SKIPIF--
 <?php if (!extension_loaded("yaf")) print "skip"; ?>
+--INI--
+yaf.use_namespace=0
 --FILE--
 <?php 
 $file = dirname(__FILE__) . "/simple.ini";
@@ -92,7 +94,13 @@ Array
                     [2] => value
                 )
 
-            [_verify:protected] => 
+            [_verify:protected] => Array
+                (
+                    [controller] => Index
+                    [action] => action
+                )
+
+            [_reverse:protected] => 
         )
 
     [simple] => Yaf_Route_Simple Object
@@ -116,7 +124,12 @@ Array
                     [action] => action
                 )
 
-            [_verify:protected] => 
+            [_verify:protected] => Array
+                (
+                    [controller] => Index
+                    [action] => action
+                )
+
         )
 
 )

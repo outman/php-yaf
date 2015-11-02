@@ -2,12 +2,14 @@
 Bug Yaf_Config_Ini crash due to inaccurate refcount
 --SKIPIF--
 <?php if (!extension_loaded("yaf")) print "skip"; ?>
+--INI--
+yaf.use_namespace=0
 --FILE--
 <?php 
 $file = dirname(__FILE__) . "/simple.ini";
 $config = new Yaf_Config_Ini($file, 'base');
 print_r($config);
-
+?>
 --EXPECTF--
 Yaf_Config_Ini Object
 (

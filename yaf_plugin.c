@@ -14,21 +14,12 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: yaf_plugin.c 321289 2011-12-21 02:53:29Z laruence $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include "php.h"
-#include "php_ini.h"
-#include "main/SAPI.h"
-#include "Zend/zend_interfaces.h"
-#include "Zend/zend_exceptions.h"
-#include "Zend/zend_alloc.h"
-#include "ext/standard/info.h"
-#include "ext/standard/php_string.h"
-#include "zend_objects.h"
 
 #include "php_yaf.h"
 #include "yaf_namespace.h"
@@ -51,49 +42,49 @@ ZEND_END_ARG_INFO()
 #endif
 /* }}} */
 
-/** {{{ proto public Yaf_Plugin::routerStartup(Yaf_Request_Abstract $request, Yaf_Response_Abstarct $response)
+/** {{{ proto public Yaf_Plugin::routerStartup(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
 */
 PHP_METHOD(yaf_plugin, routerStartup) {
 	RETURN_TRUE;
 }
 /* }}} */
 
-/** {{{ proto public Yaf_Plugin::routerShutdown(Yaf_Request_Abstract $request, Yaf_Response_Abstarct $response)
+/** {{{ proto public Yaf_Plugin::routerShutdown(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
 */
 PHP_METHOD(yaf_plugin, routerShutdown) {
 	RETURN_TRUE;
 }
 /* }}} */
 
-/** {{{ proto public Yaf_Plugin::dispatchLoopStartup(Yaf_Request_Abstract $request, Yaf_Response_Abstarct $response)
+/** {{{ proto public Yaf_Plugin::dispatchLoopStartup(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
 */
 PHP_METHOD(yaf_plugin, dispatchLoopStartup) {
 	RETURN_TRUE;
 }
 /* }}} */
 
-/** {{{ proto public Yaf_Plugin::preDispatch(Yaf_Request_Abstract $request, Yaf_Response_Abstarct $response)
+/** {{{ proto public Yaf_Plugin::preDispatch(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
 */
 PHP_METHOD(yaf_plugin, preDispatch) {
 	RETURN_TRUE;
 }
 /* }}} */
 
-/** {{{ proto public Yaf_Plugin::postDispatch(Yaf_Request_Abstract $request, Yaf_Response_Abstarct $response)
+/** {{{ proto public Yaf_Plugin::postDispatch(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
 */
 PHP_METHOD(yaf_plugin, postDispatch) {
 	RETURN_TRUE;
 }
 /* }}} */
 
-/** {{{ proto public Yaf_Plugin::dispatchLoopShutdown(Yaf_Request_Abstract $request, Yaf_Response_Abstarct $response)
+/** {{{ proto public Yaf_Plugin::dispatchLoopShutdown(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
 */
 PHP_METHOD(yaf_plugin, dispatchLoopShutdown) {
 	RETURN_TRUE;
 }
 /* }}} */
 
-/** {{{ proto public Yaf_Plugin::preResponse(Yaf_Request_Abstract $request, Yaf_Response_Abstarct $response)
+/** {{{ proto public Yaf_Plugin::preResponse(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
 */
 PHP_METHOD(yaf_plugin, preResponse) {
 	RETURN_TRUE;

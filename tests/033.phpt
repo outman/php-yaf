@@ -3,8 +3,7 @@ Check for Yaf_View_Simple with predefined template dir
 --SKIPIF--
 <?php if (!extension_loaded("yaf")) print "skip"; ?>
 --INI--
-;@TODO fix memory leak
-report_memleaks=Off
+yaf.use_namespace=0
 --FILE--
 <?php 
 $config = array(
@@ -58,6 +57,6 @@ try {
 }
 ?>
 --EXPECTF--
-Unable to find template %stests/modules/Module/views/controller/action.phtml
-Unable to find template %s/testsno-exists/controller/action.phtml
-Unable to find template %s/testsno-exists/controller/dummy.phtml
+Failed opening template %stests%cmodules%cModule%cviews%ccontroller%caction.phtml: No such file or directory
+Failed opening template %stestsno-exists%ccontroller%caction.phtml: No such file or directory
+Failed opening template %stestsno-exists%ccontroller%cdummy.phtml: No such file or directory

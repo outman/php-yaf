@@ -14,7 +14,6 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_yaf.h 327415 2012-09-01 13:58:02Z laruence $ */
 
 #ifndef PHP_YAF_H
 #define PHP_YAF_H
@@ -41,17 +40,19 @@ extern zend_module_entry yaf_module_entry;
 #define YAF_G(v) (yaf_globals.v)
 #endif
 
-#define YAF_VERSION 					"2.2.0-dev"
+#define PHP_YAF_VERSION 					"2.3.6-dev"
 
 #define YAF_STARTUP_FUNCTION(module)   	ZEND_MINIT_FUNCTION(yaf_##module)
 #define YAF_RINIT_FUNCTION(module)		ZEND_RINIT_FUNCTION(yaf_##module)
 #define YAF_STARTUP(module)	 		  	ZEND_MODULE_STARTUP_N(yaf_##module)(INIT_FUNC_ARGS_PASSTHRU)
-#define YAF_SHUTDOWN_FUNCTION(module)  	ZEND_MINIT_FUNCTION(yaf_##module)
+#define YAF_SHUTDOWN_FUNCTION(module)  	ZEND_MSHUTDOWN_FUNCTION(yaf_##module)
 #define YAF_SHUTDOWN(module)	 	    ZEND_MODULE_SHUTDOWN_N(yaf_##module)(INIT_FUNC_ARGS_PASSTHRU)
 
 #if ((PHP_MAJOR_VERSION == 5) && (PHP_MINOR_VERSION > 2)) || (PHP_MAJOR_VERSION > 5)
 #define YAF_HAVE_NAMESPACE
 #else
+#define Z_SET_REFCOUNT_P(pz, rc)      (pz)->refcount = rc
+#define Z_SET_REFCOUNT_PP(ppz, rc)    Z_SET_REFCOUNT_P(*(ppz), rc)
 #define Z_ADDREF_P 	 ZVAL_ADDREF
 #define Z_REFCOUNT_P ZVAL_REFCOUNT
 #define Z_DELREF_P 	 ZVAL_DELREF
@@ -73,6 +74,8 @@ extern zend_module_entry yaf_module_entry;
 #define yaf_session_t		zval
 #define yaf_exception_t		zval
 
+#define YAF_ME(c, m, a, f) {m, PHP_MN(c), a, (zend_uint) (sizeof(a)/sizeof(struct _zend_arg_info)-1), f},
+
 extern PHPAPI void php_var_dump(zval **struc, int level TSRMLS_DC);
 extern PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC);
 
@@ -84,6 +87,7 @@ ZEND_BEGIN_MODULE_GLOBALS(yaf)
 	char 		*local_library;
 	char        *local_namespaces;
 	char 		*global_library;
+	char        *view_directory;
 	char 		*view_ext;
 	char 		*default_module;
 	char 		*default_controller;
@@ -101,6 +105,7 @@ ZEND_BEGIN_MODULE_GLOBALS(yaf)
 	zend_bool  	running;
 	zend_bool  	in_exception;
 	zend_bool  	catch_exception;
+	zend_bool   suppressing_warning;
 /* {{{ This only effects internally */
 	zend_bool  	st_compatible;
 /* }}} */

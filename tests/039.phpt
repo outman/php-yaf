@@ -6,29 +6,26 @@ Check for Yaf_View_Simple recursive render error message outputing
 yaf.library="/php/global/dir"
 log_errors=0
 display_errors=1
+yaf.use_namespace=0
 --FILE--
 <?php
-$view = new Yaf_View_Simple(dirname(__FILE__));
+require "build.inc";
+startup();
 
+$view = new Yaf_View_Simple(DIR_ROOT);
 $view->assign("name", "laruence");
-$tpl = dirname(__FILE__) . '/foo.phtml';
-$tpl2 = dirname(__FILE__) . '/foo2.phtml';
-function cleartpl() {
-	global $tpl, $tpl2;
-	unlink($tpl);
-	unlink($tpl2);
-}
-register_shutdown_function("cleartpl");
+$tpl  =  APPLICATION_PATH . '/tpls/foo.phtml';
+$tpl2  =  APPLICATION_PATH . '/tpls/foo2.phtml';
 
 file_put_contents($tpl, <<<HTML
-<?php 
+<?php
    echo \$this->render(\$tpl);
 ?>
 HTML
 );
 
 file_put_contents($tpl2, <<<HTML
-<?php 
+<?php
    if ((1) { //syntax error
    }
 ?>
@@ -36,6 +33,12 @@ HTML
 );
 
 echo $view->render($tpl, array('tpl' => $tpl2));
+?>
+--CLEAN--
+<?php
+/* unlink foo2.phtml permission denied */
+require "build.inc"; 
+shutdown();
 ?>
 --EXPECTF--
 Parse error: syntax error, unexpected '{' in %sfoo2.phtml on line %d

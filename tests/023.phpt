@@ -5,6 +5,7 @@ Check for Yaf_Loader::set/get(library_path)
 --INI--
 yaf.use_spl_autoload=0
 yaf.lowcase_path=0
+yaf.use_namespace=0
 --FILE--
 <?php 
 $loader = Yaf_Loader::getInstance('/foo', '/bar');
@@ -24,16 +25,16 @@ $loader->autoload("Bar_Foo");
 $loader->autoload("Bar_Model");
 ?>
 --EXPECTF--
-Warning: Yaf_Loader::autoload(): Could not find script /foo/Foo/Bar.php in %s023.php on line %d
+Warning: Yaf_Loader::autoload(): Failed opening script /foo%cFoo%cBar.php: No such file or directory in %s023.php on line %d
 
-Warning: Yaf_Loader::autoload(): Could not find script /bar/Bar/Foo.php in %s023.php on line %d
+Warning: Yaf_Loader::autoload(): Failed opening script /bar%cBar%cFoo.php: No such file or directory in %s023.php on line %d
 
-Warning: Yaf_Loader::autoload(): Could not find script /foobar/Foo/Bar.php in %s023.php on line %d
+Warning: Yaf_Loader::autoload(): Failed opening script /foobar%cFoo%cBar.php: No such file or directory in %s023.php on line %d
 
-Warning: Yaf_Loader::autoload(): Could not find script /bar/Bar/Foo.php in %s023.php on line %d
+Warning: Yaf_Loader::autoload(): Failed opening script /bar%cBar%cFoo.php: No such file or directory in %s023.php on line %d
 
-Warning: Yaf_Loader::autoload(): Could not find script /foobar/Foo/Bar.php in %s023.php on line %d
+Warning: Yaf_Loader::autoload(): Failed opening script /foobar%cFoo%cBar.php: No such file or directory in %s023.php on line %d
 
-Warning: Yaf_Loader::autoload(): Could not find script /foobar/Bar/Foo.php in %s023.php on line %d
+Warning: Yaf_Loader::autoload(): Failed opening script %cfoobar%cBar%cFoo.php: No such file or directory in %s023.php on line %d
 
 Warning: Yaf_Loader::autoload(): Couldn't load a framework MVC class without an Yaf_Application initializing in %s023.php on line %d
